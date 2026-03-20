@@ -5,13 +5,17 @@ A personal net worth tracker with a Flask backend, SQLite database, and a clean 
 ## Setup
 
 ```bash
-# 1. Install dependencies
+# 1. Setup virtual env
+# use your preferred method, python venv works well, but we use uv
+uv venv && uv pip install -r requirements.txt
+
+# 2. Install dependencies
 pip install -r requirements.txt
 
-# 2. Run the dashboard (opens browser automatically)
+# 3. Run the dashboard (opens browser automatically)
 python app.py
 
-# 3. Optional: specify a custom port
+# 4. Optional: specify a custom port
 python app.py 8080
 ```
 
@@ -19,6 +23,8 @@ The app will:
 - Create `networth.db` in the same folder on first run
 - Seed sample data so the dashboard is immediately usable
 - Open your browser automatically at http://localhost:5050
+
+Note: Do not commit network.db file to GitHub, this must hold your personal data
 
 ## Features
 
@@ -34,6 +40,7 @@ The app will:
 
 - Cash & bank
 - Stocks & ETFs
+- Retirement Market account
 - Real estate
 - Gold & commodities
 - Crypto
