@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Net Worth Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <span class="logo-mark">NW</span>
+    <span class="logo-text">Networth</span>
+  </div>
+  <nav class="nav">
+    <a class="nav-item active" data-view="overview">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Overview
+    </a>
+    <a class="nav-item" data-view="trend">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+      Trend
+    </a>
+    <a class="nav-item" data-view="assets">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Assets
+    </a>
+    <a class="nav-item" data-view="liabilities">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Liabilities
+    </a>
+    <a class="nav-item" data-view="snapshots">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Snapshots
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-nw-label">Net worth</div>
+    <div class="sidebar-nw-val" id="sidebar-nw">—</div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- OVERVIEW -->
+  <section class="view active" id="view-overview">
+    <header class="view-header">
+      <h1>Overview</h1>
+      <span class="date-badge" id="today-date"></span>
+    </header>
+
+    <div class="metrics-row" id="metrics-row"></div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Asset allocation</span>
+        </div>
+        <div class="chart-wrap" style="height:220px;">
+          <canvas id="pieChart"></canvas>
+        </div>
+        <div class="legend-list" id="pie-legend"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">By class</span></div>
+        <div id="class-breakdown"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">All holdings</span>
+        <button class="btn-link" onclick="setView('assets')">+ Add asset</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="holdings-table">
+          <thead><tr><th>Name</th><th>Institution</th><th>Class</th><th class="num">Value</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TREND -->
+  <section class="view" id="view-trend">
+    <header class="view-header">
+      <h1>Trend</h1>
+      <button class="btn-primary" onclick="setView('snapshots')">+ Save snapshot</button>
+    </header>
+    <div class="card">
+      <div class="card-head"><span class="card-title">Net worth over time</span></div>
+      <div class="legend-list" style="margin-bottom:12px;">
+        <span class="legend-item"><span class="legend-sq" style="background:#8b7cf8"></span>Net worth</span>
+        <span class="legend-item"><span class="legend-sq" style="background:#34c78a"></span>Total assets</span>
+        <span class="legend-item"><span class="legend-sq" style="background:#f87171"></span>Liabilities</span>
+      </div>
+      <div class="chart-wrap" style="height:280px;"><canvas id="trendChart"></canvas></div>
+    </div>
+    <div class="card" style="margin-top:1rem;">
+      <div class="card-head"><span class="card-title">Asset class breakdown over time</span></div>
+      <div class="legend-list" id="class-trend-legend" style="margin-bottom:12px;"></div>
+      <div class="chart-wrap" style="height:240px;"><canvas id="classTrendChart"></canvas></div>
+    </div>
+  </section>
+
+  <!-- ASSETS -->
+  <section class="view" id="view-assets">
+    <header class="view-header">
+      <h1>Assets</h1>
+      <button class="btn-primary" onclick="openAssetModal()">+ Add asset</button>
+    </header>
+    <div class="card">
+      <div class="table-wrap">
+        <table class="data-table" id="assets-table">
+          <thead><tr><th>Name</th><th>Institution</th><th>Class</th><th class="num">Value</th><th>Notes</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIABILITIES -->
+  <section class="view" id="view-liabilities">
+    <header class="view-header">
+      <h1>Liabilities</h1>
+      <button class="btn-primary" onclick="openLiabModal()">+ Add liability</button>
+    </header>
+    <div class="card">
+      <div class="table-wrap">
+        <table class="data-table" id="liab-table">
+          <thead><tr><th>Name</th><th>Institution</th><th class="num">Amount</th><th>Notes</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- SNAPSHOTS -->
+  <section class="view" id="view-snapshots">
+    <header class="view-header">
+      <h1>Snapshots</h1>
+    </header>
+    <div class="card" style="max-width:520px;">
+      <div class="card-head"><span class="card-title">Save snapshot for month</span></div>
+      <p class="muted-text">Records current totals from the database into the trend history.</p>
+      <div style="display:flex;gap:10px;align-items:center;margin-top:14px;">
+        <input type="month" id="snap-month" class="input-field" style="width:180px;">
+        <button class="btn-primary" onclick="saveSnapshot()">Save snapshot</button>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1rem;">
+      <div class="card-head"><span class="card-title">Snapshot history</span></div>
+      <div class="table-wrap">
+        <table class="data-table" id="snap-table">
+          <thead><tr><th>Month</th><th class="num">Assets</th><th class="num">Liabilities</th><th class="num">Net worth</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ASSET MODAL -->
+<div class="modal-overlay" id="asset-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="asset-modal-title">Add asset</span>
+      <button class="modal-close" onclick="closeModal('asset-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="asset-id">
+      <label class="field-label">Name</label>
+      <input type="text" id="asset-name" class="input-field" placeholder="e.g. Fidelity 401k">
+      <label class="field-label">Institution</label>
+      <input type="text" id="asset-institution" class="input-field" placeholder="e.g. Fidelity">
+      <label class="field-label">Asset class</label>
+      <select id="asset-class" class="input-field">
+        {% for cls in asset_classes %}
+        <option>{{ cls }}</option>
+        {% endfor %}
+      </select>
+      <label class="field-label">Value ($)</label>
+      <input type="number" id="asset-value" class="input-field" placeholder="0.00" min="0" step="0.01">
+      <label class="field-label">Notes</label>
+      <textarea id="asset-notes" class="input-field" rows="2" placeholder="Optional notes..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('asset-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveAsset()">Save asset</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIABILITY MODAL -->
+<div class="modal-overlay" id="liab-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="liab-modal-title">Add liability</span>
+      <button class="modal-close" onclick="closeModal('liab-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="liab-id">
+      <label class="field-label">Name</label>
+      <input type="text" id="liab-name" class="input-field" placeholder="e.g. Mortgage">
+      <label class="field-label">Institution</label>
+      <input type="text" id="liab-institution" class="input-field" placeholder="e.g. Wells Fargo">
+      <label class="field-label">Amount ($)</label>
+      <input type="number" id="liab-amount" class="input-field" placeholder="0.00" min="0" step="0.01">
+      <label class="field-label">Notes</label>
+      <textarea id="liab-notes" class="input-field" rows="2" placeholder="Optional notes..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('liab-modal')">Cancel</button>
+      <button class="btn-primary" onclick="saveLiability()">Save liability</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DELETE -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-head">
+      <span class="modal-title">Confirm delete</span>
+      <button class="modal-close" onclick="closeModal('confirm-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-msg" style="color:var(--text-secondary);font-size:14px;"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeModal('confirm-modal')">Cancel</button>
+      <button class="btn-danger" id="confirm-ok">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
